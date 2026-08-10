@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import API from '../services/api';
 import { UserPlus, Trash2, Mail, ShieldCheck } from 'lucide-react';
 
 export default function TeamDirectory({ user }) {
@@ -11,16 +12,20 @@ export default function TeamDirectory({ user }) {
 
   const fetchTeam = async () => {
     try {
-      const res = await fetch(`http://localhost:5001/api/users?assignerRole=${user.role}`);
-      const data = await res.json();
-      setTeamMembers(data);
+      const res = await API.get('/users', {
+        params: { assignerRole: user?.role }
+      });
+      const data = res.data;
+      setTeamMembers(Array.isArray(data) ? data : data.users || []);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching team directory:', err);
     }
   };
 
   useEffect(() => {
-    fetchTeam();
+    if (user) {
+      fetchTeam();
+    }
   }, [user]);
 
   const handleAddUser = async (e) => {
@@ -28,33 +33,30 @@ export default function TeamDirectory({ user }) {
     setError('');
     setSuccess('');
     try {
-      const res = await fetch('http://localhost:5001/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, role })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Failed to add employee');
+      const res = await API.post('/users', { name, email, role });
+      if (res.status < 200 || res.status >= 300) {
+        throw new Error('Failed to add employee');
+      }
       setSuccess('Personnel successfully onboarded!');
       setName('');
       setEmail('');
       fetchTeam();
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || 'Failed to add employee');
     }
   };
 
   const handleDeleteUser = async (id) => {
     if (!window.confirm('Are you sure you want to remove this employee and unassign their tasks?')) return;
     try {
-      await fetch(`http://localhost:5001/api/users/${id}`, { method: 'DELETE' });
+      await API.delete(`/users/${id}`);
       fetchTeam();
     } catch (err) {
-      console.error(err);
+      console.error('Error deleting user:', err);
     }
   };
 
-  const canManage = ['BOSS', 'GM', 'MANAGER', 'TL'].includes(user.role);
+  const canManage = ['BOSS', 'GM', 'MANAGER', 'TL'].includes(user?.role);
 
   return (
     <div className="space-y-6">
@@ -64,7 +66,7 @@ export default function TeamDirectory({ user }) {
       </div>
 
       {canManage && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-bold text-cyan-400 font-mono uppercase">
             <UserPlus className="w-4 h-4" />
             <span>Onboard New Team Member</span>
@@ -110,7 +112,7 @@ export default function TeamDirectory({ user }) {
         </div>
       )}
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-sm">
         <div className="p-4 border-b border-slate-800 font-mono text-xs text-slate-400 uppercase tracking-wider flex items-center justify-between">
           <span>Active Workforce Roster ({teamMembers.length})</span>
           <span className="text-cyan-400 flex items-center gap-1">
@@ -122,7 +124,7 @@ export default function TeamDirectory({ user }) {
             <div key={member._id} className="p-4 flex items-center justify-between hover:bg-slate-800/40 transition">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold text-xs">
-                  {member.name.charAt(0)}
+                  {member.name ? member.name.charAt(0) : 'U'}
                 </div>
                 <div>
                   <div className="text-xs font-bold text-white">{member.name}</div>
@@ -136,7 +138,7 @@ export default function TeamDirectory({ user }) {
                 <span className="px-2.5 py-1 text-[9px] font-mono font-bold rounded-md bg-slate-800 text-cyan-400 border border-slate-700 uppercase">
                   {member.role}
                 </span>
-                {canManage && member._id !== (user._id || user.id) && (
+                {canManage && member._id !== (user?._id || user?.id) && (
                   <button
                     onClick={() => handleDeleteUser(member._id)}
                     className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition cursor-pointer"

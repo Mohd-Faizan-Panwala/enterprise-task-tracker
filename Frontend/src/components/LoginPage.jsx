@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import API from '../services/api';
 import { LogIn, Sparkles, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage({ onLogin }) {
@@ -20,18 +21,15 @@ export default function LoginPage({ onLogin }) {
     setError('');
 
     try {
-      const res = await fetch('http://localhost:5001/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: targetEmail, password })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
+      // Connects seamlessly to your live Render backend via centralized API client
+      const res = await API.post('/login', { email: targetEmail, password });
+      const data = res.data;
       
       localStorage.setItem('taskqueue_token', data.token);
+      localStorage.setItem('token', data.token); // Safety fallback for consistency
       onLogin(data.user);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -113,6 +111,7 @@ export default function LoginPage({ onLogin }) {
             {demoUsers.map((u) => (
               <button
                 key={u.email}
+                type="button"
                 onClick={() => handleLoginSubmit(null, u.email)}
                 className="w-full text-left bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800/80 p-2.5 rounded-xl transition flex items-center justify-between group cursor-pointer"
               >
