@@ -1,0 +1,20 @@
+{
+  "name": "taskqueue-lite-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && npm install --prefix Backend/server && npm install --prefix Frontend",
+    "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,emerald\" \"npm run dev --prefix Backend/server\" \"npm run dev --prefix Frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb": "^7.5.0",
+    "mongoose": "^9.9.1"
+  }
+}
