@@ -1,29 +1,40 @@
-# Role-Based Task Management System
+# Enterprise Task Tracker (TaskQueue)
 
-A full-stack, enterprise-grade task and workforce management application with strict hierarchical role privileges, cloud database persistence, and a fully responsive mobile-first UI.
+A modern, responsive, enterprise-grade task management and team control dashboard built with React, Vite, Tailwind CSS, and React Router.
+
+## 🚀 Features
+
+* **Role-Based Workspaces:** Tailored views and controls for Employees and Supervisors.
+* **Complete Sidebar Navigation:** Seamless client-side routing across all core modules:
+  * Dashboard & Task Controls
+  * Team Directory
+  * Analytics & Telemetry Reports
+  * Audit Logs & Security
+  * Workflows & SLAs
+  * Notifications Hub
+  * Integrations & Webhooks
+  * Settings & Security Configurations
+* **Dynamic Theming:** Built-in Light and Dark mode toggle with persistent local storage caching.
+* **Mobile-Friendly:** Fully responsive layout with sliding mobile drawer navigation.
 
 ---
 
-## 🚀 Tech Stack
-* **Frontend:** React, Tailwind CSS, Lucide React Icons
-* **Backend:** Node.js, Express.js
-* **Database:** MongoDB Atlas (Cloud NoSQL) with Mongoose ODM
+## 🛠️ Tech Stack
+
+* **Frontend:** React, React Router
+* **Styling:** Tailwind CSS
+* **Icons:** Lucide React
+* **Build Tool:** Vite
 
 ---
 
-## ✨ Key Features
-* **Hierarchical Role Access:** Strict enforcement of rank levels (BOSS > GM > MANAGER > TL > EMPLOYEE). Supervisors cannot see or assign tasks to higher-level executives.
-* **Workforce Management:** Managers and Team Leaders can onboard new subordinates or remove existing team members directly.
-* **Advanced Task Management:** Create, track, edit, reassign, and filter tasks across the entire team in real-time.
-* **Fully Responsive:** Optimized UI that adapts seamlessly to mobile devices, tablets, and desktops.
+## 📦 Getting Started Locally
 
----
+### Prerequisites
+Make sure you have [Node.js](https://nodejs.org/) installed on your machine.
 
-## 🛠️ Installation & Setup
+### Installation
 
-### 1. Clone & Install Dependencies
-```powershell
-# Install backend dependencies
-npm install --prefix Backend/server
-
-# Install frontend dependencies (if not already done)
+1. **Clone the repository:**
+   ```bash
+   git clone [https://github.com/Mohd-Faizan-Panwala/enterprise-task-tracker.git](https://github.com/Mohd-Faizan-Panwala/enterprise-task-tracker.git)
