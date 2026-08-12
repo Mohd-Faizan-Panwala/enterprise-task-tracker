@@ -7,15 +7,33 @@ import API from '../services/api';
 import { Layers, Clock, CheckCircle2, AlertCircle, Activity, ShieldCheck } from 'lucide-react';
 
 export default function DashboardPage() {
-  const [user, setUser] = useState(null);
-  const [tasks, setTasks] = useState([]);
+  // Initialize user instantly from localStorage if available
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Initialize tasks instantly from local cache if available to prevent blank screens
+  const [tasks, setTasks] = useState(() => {
+    try {
+      const cachedTasks = localStorage.getItem('cached_tasks');
+      return cachedTasks ? JSON.parse(cachedTasks) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [filter, setFilter] = useState('ALL');
   const [editingTask, setEditingTask] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!tasks.length); // Only show loader if we have zero cached tasks
   const [theme, setTheme] = useState('dark');
   const [expandedLog, setExpandedLog] = useState(null);
 
-  // Fetch tasks using the current user's unique MongoDB ID
+  // Fetch tasks and update local cache
   const fetchTasks = async (targetUser) => {
     try {
       const userId = targetUser?._id || targetUser?.id;
@@ -24,7 +42,11 @@ export default function DashboardPage() {
         return;
       }
       const data = await taskService.getTasks({ userId });
-      setTasks(Array.isArray(data) ? data : data.tasks || []);
+      const fetchedTasks = Array.isArray(data) ? data : data.tasks || [];
+      
+      setTasks(fetchedTasks);
+      // Cache tasks locally for instant loading on next refresh
+      localStorage.setItem('cached_tasks', JSON.stringify(fetchedTasks));
     } catch (err) {
       console.error("Error fetching tasks from backend:", err);
     } finally {
@@ -32,11 +54,11 @@ export default function DashboardPage() {
     }
   };
 
-  // Initialize unique user session from backend database on mount
+  // Initialize unique user session & background sync on mount
   useEffect(() => {
     const initializeUserAndTasks = async () => {
       try {
-        let savedUser = JSON.parse(localStorage.getItem('user'));
+        let savedUser = user;
 
         // If local user is missing or invalid, fetch real users from the backend database
         if (!savedUser || !savedUser._id || savedUser._id.length !== 24) {
@@ -46,11 +68,11 @@ export default function DashboardPage() {
           if (Array.isArray(users) && users.length > 0) {
             savedUser = users.find(u => u.role === 'GM' || u.role === 'BOSS') || users[0];
             localStorage.setItem('user', JSON.stringify(savedUser));
+            setUser(savedUser);
           }
         }
 
         if (savedUser && savedUser._id) {
-          setUser(savedUser);
           await fetchTasks(savedUser);
         } else {
           setLoading(false);
@@ -105,7 +127,7 @@ export default function DashboardPage() {
     return taskStatus === currentFilter;
   });
 
-  if (loading) {
+  if (loading && tasks.length === 0) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-cyan-400 font-mono text-sm">
         Initializing Enterprise Command Center...
@@ -122,7 +144,7 @@ export default function DashboardPage() {
           <div>
             <h2 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Task Command Center</h2>
             <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-              Welcome back, <span className="text-cyan-500 font-semibold">{user?.name}</span> ({user?.role})
+              Welcome back, <span className="text-cyan-500 font-semibold">{user?.name || 'User'}</span> ({user?.role || 'Guest'})
             </p>
           </div>
           {isSupervisor && (
