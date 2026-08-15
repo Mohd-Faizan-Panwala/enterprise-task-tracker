@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom'; // 1. Change from BrowserRouter to HashRouter
 import App from './App.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <HashRouter> {/* 2. Wrap your app in HashRouter */}
       <App />
-    </BrowserRouter>
+    </HashRouter>
   </React.StrictMode>
 );
